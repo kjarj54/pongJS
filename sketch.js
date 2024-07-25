@@ -49,6 +49,11 @@ class Pelota {
     if (this.y < 0 || this.y > height) {
       this.velocidadY *= -1;
     }
+
+    // Verificar si la pelota sale de la zona de juego
+    if (this.x < 0 || this.x > width) {
+      this.reiniciar();
+    }
   }
 
   rebotar(raqueta) {
@@ -58,6 +63,13 @@ class Pelota {
         this.y < raqueta.y + raqueta.alto) {
       this.velocidadX *= -1;
     }
+  }
+
+  reiniciar() {
+    this.x = width / 2;
+    this.y = height / 2;
+    this.velocidadX = 5;
+    this.velocidadY = 3;
   }
 }
 
@@ -79,18 +91,19 @@ class Raqueta {
 
   mover() {
     if (this.esJugador) {
-      if (keyIsDown(UP_ARROW)) {
-        this.y -= this.velocidad;
-      }
-      if (keyIsDown(DOWN_ARROW)) {
-        this.y += this.velocidad;
-      }
+      this.y = mouseY - this.alto / 2;
       this.y = constrain(this.y, 0, height - this.alto);
     }
   }
 
   moverAutomatica(pelota) {
-    this.y = pelota.y - this.alto / 2;
-    this.y = constrain(this.y, 0, height - this.alto);
+    if (pelota.velocidadX > 0) {
+      if (pelota.y > this.y + this.alto / 2) {
+        this.y += this.velocidad;
+      } else if (pelota.y < this.y + this.alto / 2) {
+        this.y -= this.velocidad;
+      }
+      this.y = constrain(this.y, 0, height - this.alto);
+    }
   }
 }
