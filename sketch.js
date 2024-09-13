@@ -4,6 +4,8 @@ let altoPantalla = 400;
 let pelota;
 let jugador;
 let computadora;
+let puntajeJugador = 0;
+let puntajeComputadora = 0;
 
 function setup() {
   createCanvas(anchoPantalla, altoPantalla);
@@ -15,6 +17,12 @@ function setup() {
 function draw() {
   background(0);
 
+  // Dibujar bordes superiores e inferiores
+  fill(255);
+  rect(0, 0, width, 10); // borde superior
+  rect(0, height - 10, width, 10); // borde inferior
+
+  // Mostrar y mover pelota y raquetas
   pelota.mostrar();
   pelota.mover();
   pelota.rebotar(jugador);
@@ -25,6 +33,12 @@ function draw() {
 
   computadora.mostrar();
   computadora.moverAutomatica(pelota);
+
+  // Mostrar marcador
+  textSize(32);
+  fill(255);
+  text(puntajeJugador, width / 4, 40);
+  text(puntajeComputadora, 3 * width / 4, 40);
 }
 
 // Clase Pelota
@@ -35,10 +49,11 @@ class Pelota {
     this.diametro = 20;
     this.velocidadX = 5;
     this.velocidadY = 3;
+    this.color = [255, 255, 255];
   }
 
   mostrar() {
-    fill(255);
+    fill(this.color);
     ellipse(this.x, this.y, this.diametro);
   }
 
@@ -46,8 +61,18 @@ class Pelota {
     this.x += this.velocidadX;
     this.y += this.velocidadY;
 
-    if (this.y < 0 || this.y > height) {
+    if (this.y < 10 || this.y > height - 10) {
       this.velocidadY *= -1;
+      this.cambiarColor();
+    }
+
+    // Verificar si la pelota sale de la zona de juego
+    if (this.x < 0) {
+      puntajeComputadora++;
+      this.reiniciar();
+    } else if (this.x > width) {
+      puntajeJugador++;
+      this.reiniciar();
     }
   }
 
@@ -58,6 +83,18 @@ class Pelota {
         this.y < raqueta.y + raqueta.alto) {
       this.velocidadX *= -1;
     }
+  }
+
+  reiniciar() {
+    this.x = width / 2;
+    this.y = height / 2;
+    this.velocidadX = 5;
+    this.velocidadY = 3;
+    this.color = [255, 255, 255];
+  }
+
+  cambiarColor() {
+    this.color = [random(255), random(255), random(255)];
   }
 }
 
@@ -79,18 +116,19 @@ class Raqueta {
 
   mover() {
     if (this.esJugador) {
-      if (keyIsDown(UP_ARROW)) {
-        this.y -= this.velocidad;
-      }
-      if (keyIsDown(DOWN_ARROW)) {
-        this.y += this.velocidad;
-      }
-      this.y = constrain(this.y, 0, height - this.alto);
+      this.y = mouseY - this.alto / 2;
+      this.y = constrain(this.y, 10, height - this.alto - 10); // Limitar posición de la raqueta
     }
   }
 
   moverAutomatica(pelota) {
-    this.y = pelota.y - this.alto / 2;
-    this.y = constrain(this.y, 0, height - this.alto);
+    if (pelota.velocidadX > 0) {
+      if (pelota.y > this.y + this.alto / 2) {
+        this.y += this.velocidad;
+      } else if (pelota.y < this.y + this.alto / 2) {
+        this.y -= this.velocidad;
+      }
+      this.y = constrain(this.y, 10, height - this.alto - 10); // Limitar posición de la raqueta
+    }
   }
 }
